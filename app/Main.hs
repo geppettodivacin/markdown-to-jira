@@ -3,13 +3,16 @@ module Main where
 import qualified Text.PandocJira.Batch as Batch
 
 import Control.Monad.IO.Class (liftIO)
+import Control.Applicative ((<**>))
 
-import Text.CSV
+import Text.CSV (CSV)
 import Text.Pandoc
 
 import qualified Data.Text.IO as Text.IO
 
 import qualified Options.Applicative as OptParse
+
+import qualified Text.CSV as CSV
 
 
 data Options = Options
@@ -25,21 +28,31 @@ data OutputPath
     | OutputPath FilePath
     deriving Show
 
+printOutputPath :: OutputPath -> String
+printOutputPath StdOut = "stdout"
+printOutputPath (OutputPath outputPath) = outputPath
+
+outputFilePath :: OutputPath -> FilePath
+outputFilePath StdOut = "/dev/stdout"
+outputFilePath (OutputPath outputPath) = outputPath
+
 
 main :: IO ()
 main = run =<< OptParse.execParser optParser
   where
-    optParser = OptParse.info opts info
+    optParser = OptParse.info (opts <**> OptParse.helper) info
 
 -- HELPERS
 
 run :: Options -> IO ()
 run options =
     runIOorExplode $ do
-        doc <- loadMarkdown "in.md"
+        let (InputPath inputPath) = inputFile options
+            outputPath = outputFile options
+        doc <- loadMarkdown inputPath
         let batch = Batch.parse doc
         csv <- Batch.toCsv batch
-        liftIO . putStrLn . printCSV $ csv
+        liftIO . writeFile (outputFilePath outputPath) . printCsv $ csv
 
 loadMarkdown :: FilePath -> PandocIO Pandoc
 loadMarkdown filepath = do
@@ -48,6 +61,13 @@ loadMarkdown filepath = do
             { readerExtensions = pandocExtensions
             }
     readMarkdown options fileContents
+
+printCsv :: CSV -> String
+printCsv = addNewline . CSV.printCSV
+  where
+    addNewline s
+      | last s == '\n' = s
+      | otherwise      = s ++ "\n"
 
 -- OPTION PARSERS
 
@@ -62,7 +82,17 @@ opts =
     Options <$> inputArg <*> outputOpt
 
 inputArg :: OptParse.Parser InputPath
-inputArg = _
+inputArg = fmap InputPath . OptParse.strArgument
+    $  OptParse.action "file"
+    <> OptParse.metavar "INPUT"
+    <> OptParse.help "Path to input markdown file to convert"
 
 outputOpt :: OptParse.Parser OutputPath
-outputOpt = _
+outputOpt = OptParse.option (OutputPath <$> OptParse.str)
+    $  OptParse.short 'o'
+    <> OptParse.long "output"
+    <> OptParse.action "file"
+    <> OptParse.metavar "OUTPUT"
+    <> OptParse.help "Path to output csv file path"
+    <> OptParse.value StdOut
+    <> OptParse.showDefaultWith printOutputPath
