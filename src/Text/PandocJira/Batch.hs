@@ -38,7 +38,7 @@ parse pandoc =
     Batch issues attributes
   where
     issues = Issue.parseAll . pandocBlocks $ pandoc
-    attributes = foldr1 MultiSet.maxUnion . map (MultiSet.fromList . map fst . Issue.metadata) $ issues
+    attributes = foldr MultiSet.maxUnion MultiSet.empty . map (MultiSet.fromList . map fst . Issue.metadata) $ issues
 
 
 toCsv :: PandocMonad m => Batch -> m CSV
