@@ -5,12 +5,12 @@ import Test.Hspec
 
 import Data.Text (Text)
 
-import Text.PandocJira.Issue (Issue (..))
-import Text.PandocJira.Batch (Batch (..))
+import Text.MarkdownToJira.Issue (Issue (..))
+import Text.MarkdownToJira.Batch (Batch (..))
 import Text.Pandoc (Pandoc (..))
 
-import qualified Text.PandocJira.Batch as Batch
-import qualified Text.PandocJira.Issue as Issue
+import qualified Text.MarkdownToJira.Batch as Batch
+import qualified Text.MarkdownToJira.Issue as Issue
 
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text.IO

@@ -1,6 +1,6 @@
 module Main where
 
-import qualified Text.PandocJira.Batch as Batch
+import qualified Text.MarkdownToJira.Batch as Batch
 
 import Control.Monad.IO.Class (liftIO)
 import Control.Applicative ((<**>))

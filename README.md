@@ -1,1 +1,1 @@
-# pandoc-jira
+# markdown-to-jira

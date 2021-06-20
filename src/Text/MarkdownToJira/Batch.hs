@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Text.PandocJira.Batch (Batch (..), fromIssuesAttributes, parse, toCsv) where
+module Text.MarkdownToJira.Batch (Batch (..), fromIssuesAttributes, parse, toCsv) where
 
-import Text.PandocJira.Issue (Issue (..))
+import Text.MarkdownToJira.Issue (Issue (..))
 
 import Control.Monad (mapM)
 import Data.List (foldl', lookup)
@@ -15,7 +15,7 @@ import Text.CSV (CSV)
 
 import qualified Data.MultiSet as MultiSet
 import qualified Data.Text as Text
-import qualified Text.PandocJira.Issue as Issue
+import qualified Text.MarkdownToJira.Issue as Issue
 import qualified Text.Pandoc as Pandoc
 
 import Debug.Trace

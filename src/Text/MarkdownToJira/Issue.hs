@@ -1,4 +1,4 @@
-module Text.PandocJira.Issue (Issue (..), Metadata, parse, parseAll, emptyDesc) where
+module Text.MarkdownToJira.Issue (Issue (..), Metadata, parse, parseAll, emptyDesc) where
 
 import Data.Monoid (mempty)
 import Data.Text (Text)
