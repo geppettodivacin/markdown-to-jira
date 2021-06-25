@@ -23,10 +23,12 @@ dependencies:
 - base >= 4.7 && < 5
 - containers
 - csv
+- monad-loops
+- mtl
+- multiset
 - pandoc
 - pandoc-types
 - text
-- multiset
 
 library:
   source-dirs: src

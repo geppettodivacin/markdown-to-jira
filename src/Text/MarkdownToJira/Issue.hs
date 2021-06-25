@@ -1,12 +1,16 @@
 module Text.MarkdownToJira.Issue (Issue (..), Metadata, parse, parseAll, emptyDesc) where
 
+import Control.Monad.State (State)
 import Data.Monoid (mempty)
 import Data.Text (Text)
 import Text.Pandoc (Pandoc (..))
 
+import qualified Control.Monad.State as State
+import qualified Control.Monad.Loops as Loops
+import qualified Data.Maybe as Maybe
+import qualified Data.Text as Text
 import qualified Text.Pandoc as Pandoc
 import qualified Text.Pandoc.Shared as Pandoc
-import qualified Data.Text as Text
 
 
 data Issue =
@@ -20,27 +24,40 @@ data Issue =
 type Metadata =
     [(Text, Text)]
 
-parse :: [Pandoc.Block] -> (Maybe Issue, [Pandoc.Block])
-parse = parseSummary
+parse :: State [Pandoc.Block] (Maybe Issue)
+parse = do
+    maybeSummary <- parseSummary
+    case maybeSummary of
+        Nothing ->
+            return Nothing
+        Just summary -> do
+            (description, attributes) <- parseBody
+            return . Just $ Issue summary description attributes
 
-parseSummary :: [Pandoc.Block] -> (Maybe Issue, [Pandoc.Block])
-parseSummary (block : blocks) =
-    case block of
-        Pandoc.Header 1 _ inline ->
-            case parseDescription (Pandoc.stringify inline) blocks of
-                (issue, blocks) ->
-                    (Just issue, blocks)
-        _ -> (Nothing, blocks)
+parseSummary :: State [Pandoc.Block] (Maybe Text)
+parseSummary = do
+    blocks <- State.get
+    let (summary, blocks') =
+            case blocks of
+                (Pandoc.Header 1 _ inline : blocks') ->
+                    (Just $ Pandoc.stringify inline, blocks')
+                (_ : blocks') ->
+                    (Nothing, blocks')
+                _ ->
+                    (Nothing, [])
+    State.put blocks'
+    return summary
 
-parseDescription :: Text -> [Pandoc.Block] -> (Issue, [Pandoc.Block])
-parseDescription summary blocks =
-    (issue, remaining)
+parseBody :: State [Pandoc.Block] (Pandoc, Metadata)
+parseBody = do
+    blocks <- State.get
+    let (result, remaining) = go blocks
+    State.put remaining
+    return result
   where
-    (issue, remaining) = go blocks
+    init = (emptyDesc, [])
 
-    init = Issue summary emptyDesc []
-
-    go :: [Pandoc.Block] -> (Issue, [Pandoc.Block])
+    go :: [Pandoc.Block] -> ((Pandoc, Metadata), [Pandoc.Block])
     go [] =
         (init, [])
     go (block : blocks) =
@@ -68,9 +85,9 @@ parseAll :: [Pandoc.Block] -> [Issue]
 parseAll [] =
     []
 parseAll blocks =
-    case parse blocks of
-        (Nothing, blocks') -> parseAll blocks'
-        (Just issue, blocks') -> issue : parseAll blocks'
+    Maybe.catMaybes maybeIssues
+  where
+    maybeIssues = State.evalState (parse `Loops.untilM` State.gets null) blocks
 
 emptyDesc :: Pandoc
 emptyDesc =
@@ -78,17 +95,19 @@ emptyDesc =
 
 
 -- Private functions
+type Body = (Pandoc, Metadata)
+
 prependToPandoc :: Pandoc.Block -> Pandoc -> Pandoc
 prependToPandoc block (Pandoc meta blocks) =
     Pandoc meta (block : blocks)
 
-prependToDescription :: Pandoc.Block -> Issue -> Issue
-prependToDescription block issue =
-    issue { description = prependToPandoc block (description issue) }
+prependToDescription :: Pandoc.Block -> Body -> Body
+prependToDescription block (description, metadata) =
+    (prependToPandoc block description, metadata)
 
-prependToMetadata :: [(Text, Text)] -> Issue -> Issue
-prependToMetadata entries issue =
-    issue { metadata = entries ++ metadata issue }
+prependToMetadata :: [(Text, Text)] -> Body -> Body
+prependToMetadata entries (description, metadata) =
+    (description, entries ++ metadata)
 
 toEntries :: ([Pandoc.Inline], [[Pandoc.Block]]) -> [(Text, Text)]
 toEntries (term, definitions) =
