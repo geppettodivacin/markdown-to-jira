@@ -58,6 +58,8 @@ Finish explaining issue to users
 
 ### Full markdown descriptions
 Everything that comes beneath the level 1 header becomes the issue description.
+Markdown in the description will be parsed and transformed into the equivalent
+Jira markup.
 
     # Create a task with a long description
 
@@ -107,8 +109,16 @@ Relates To
 : TASK-123
 ```
 
+Some brief notes on definition lists:
+
+1. They begin with an unindented key.
+2. They are followed by one or more "definitions," prefixed by either a tilde
+   (`~`) or a colon (`:`).
+3. They must have a blank line before them and a blank line (or end of file)
+   after them.
+
 See Pandoc's documentation on [definition lists][pandoc-definition] for more
-information on that. See section below for more info about
+information on those. See the section below for more info about
 [issue links](#issue-links).
 
 [pandoc-definition]: https://pandoc.org/MANUAL.html#definition-lists (Definition lists)
@@ -117,7 +127,7 @@ Importing the generated CSV file
 --------------------------------
 
 The `markdown-to-jira` tool creates a CSV file that is suitable for importing
-into Jira. To do this import:
+into Jira. To perform an import:
 
 1. Select `Issues->Import CSV` from the main navigation bar.
 2. You will be prompted for a CSV file and, optionally, a template file. (You
@@ -130,7 +140,7 @@ into Jira. To do this import:
    format, and is useful for [issue links](#issue-links). DO NOT map the
    Description, or you will lose the description formatting.
 5. Click Import. You will be given the option here to save a template file
-   (Keeps the project and all the mappings you made, along with any other
+   (keeps the project and all the mappings you made, along with any other
    settings you changed in the wizard) and / or to view the created tasks.
    It is recommended that you verify that the task import worked as expected.
 
@@ -199,7 +209,7 @@ work, let me know!)
       (@useful) This item will be useful later.
       (@) Other item isn't so useful.
 
-      Look back at item (@useful) for an example of what to  do.
+      Look back at item (@useful) for an example of what to do.
 
 * `simple_tables`: Works to create tables! Alignment is lost, however.
 
@@ -238,13 +248,14 @@ work, let me know!)
 * `tex_math_dollars`: It works about as well as it can, italicizing all
   variables, converting all symbols to unicode, and correctly sub- or
   superscripting anything as needed. If there's anything that Jira really can't
-  display, like a fraction, it will just omit it from the output.
+  display, like a fraction, it will just output it verbatim.
 
       # Issue with TeX math
 
       See Euler's Identity $e^{i\pi} + 1 = 0$
 
-      Trying a fraction like \frac{1+x}{x} results in a blank space.
+      Trying a fraction like $\frac{1+x}{x}$ results in a verbatim copy of the
+      input, including the `$` signs.
 
 Issue Links
 -----------
