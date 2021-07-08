@@ -13,10 +13,10 @@ me about the process of creating a series of tasks:
 * Personal nitpicks: I can't use my own text editor, and I have to use Jira's
   awkward one-off markup language that's only used in Atlassian products.
 
-This tool is provides a simple workflow to add a batch of Jira issues. The
+This tool provides a simple workflow to add a batch of Jira issues. The
 batch is written as a single Pandoc-flavored Markdown file with a header for
 each new issue. The description and the issue metadata (issue type, priority,
-epic, links, etc.) go under the headers, and all Markdown gets converted to the
+epic, links, etc.) go under each header, and all Markdown gets converted to the
 equivalent Jira markup. The output is a CSV file, ready to be imported by
 Jira's CSV Import tool.
 
