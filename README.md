@@ -38,7 +38,7 @@ Usage: markdown-to-jira INPUT [-o|--output OUTPUT]
 
 Available options:
   INPUT                    Path to input markdown file to convert
-  -o,--output OUTPUT       Path to output csv file path (default: stdout)
+  -o,--output OUTPUT       Path to output csv file (default: stdout)
   -h,--help                Show this help text
 ```
 

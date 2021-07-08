@@ -93,6 +93,6 @@ outputOpt = OptParse.option (OutputPath <$> OptParse.str)
     <> OptParse.long "output"
     <> OptParse.action "file"
     <> OptParse.metavar "OUTPUT"
-    <> OptParse.help "Path to output csv file path"
+    <> OptParse.help "Path to output csv file"
     <> OptParse.value StdOut
     <> OptParse.showDefaultWith printOutputPath
