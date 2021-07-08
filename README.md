@@ -13,11 +13,12 @@ me about the process of creating a series of tasks:
 * Personal nitpicks: I can't use my own text editor, and I have to use Jira's
   awkward one-off markup language that's only used in Atlassian products.
 
-This tool is intended to provide a better workflow to add a batch of Jira
-issues. The batch is written as a single Pandoc-flavored Markdown file with a
-header for each new issue. The description and the issue metadata (issue type,
-priority, epic, links, etc.) go under the headers. The Markdown is converted to
-a CSV file, ready to be imported by Jira's CSV Import tool.
+This tool is provides a simple workflow to add a batch of Jira issues. The
+batch is written as a single Pandoc-flavored Markdown file with a header for
+each new issue. The description and the issue metadata (issue type, priority,
+epic, links, etc.) go under the headers, and all Markdown gets converted to the
+equivalent Jira markup. The output is a CSV file, ready to be imported by
+Jira's CSV Import tool.
 
 For more information about Pandoc-flavored Markdown, see [this
 page][pandoc-markdown].
@@ -108,11 +109,34 @@ Relates To
 
 See Pandoc's documentation on [definition lists][pandoc-definition] for more
 information on that. See section below for more info about
-[issue links](issue-links).
+[issue links](#issue-links).
 
 [pandoc-definition]: https://pandoc.org/MANUAL.html#definition-lists (Definition lists)
 
-### Known working markdown extensions
+Importing the generated CSV file
+--------------------------------
+
+The `markdown-to-jira` tool creates a CSV file that is suitable for importing
+into Jira. To do this import:
+
+1. Select `Issues->Import CSV` from the main navigation bar.
+2. You will be prompted for a CSV file and, optionally, a template file. (You
+   can create the template from the last step of this process, to save the
+   settings from the import wizard.)
+3. You will be prompted to input general settings. All these can remain the
+   same, except make sure your Project Name is correct.
+4. You will be prompted to map each of the columns to a value in Jira. This
+   mapping is intended for mapping values that do not exactly conform to Jira's
+   format, and is useful for [issue links](#issue-links). DO NOT map the
+   Description, or you will lose the description formatting.
+5. Click Import. You will be given the option here to save a template file
+   (Keeps the project and all the mappings you made, along with any other
+   settings you changed in the wizard) and / or to view the created tasks.
+   It is recommended that you verify that the task import worked as expected.
+
+Known working markdown extensions
+---------------------------------
+
 Pandoc made several additions to Markdown in order to make it easier to more
 semantically convert from Markdown to various formats other and back. These
 are all enabled by default in Pandoc Markdown. Since Pandoc does all the real
@@ -221,3 +245,53 @@ work, let me know!)
       See Euler's Identity $e^{i\pi} + 1 = 0$
 
       Trying a fraction like \frac{1+x}{x} results in a blank space.
+
+Issue Links
+-----------
+
+Links between issues is one of the core difficulties of creating tasks
+one-by-one. It's hard to see the links, and you can only look at one task at a
+time, making the process of verification correct.
+
+Because Jira allows links to be preserved on import, we can create links via the
+usual metadata. Any metadata field can be mapped to a "Link" field in Jira via
+the import settings. Links can be to existing issues (by specifying their issue
+key) or to new issues (by creating a unique Issue Id metadata item).
+
+First, prepare your file similar to this:
+
+```markdown
+#Foo Issue
+
+Issue Id
+: foo
+
+Epic Link
+: PROJECT-123
+
+Blocks
+: bar
+: PROJECT-321
+
+#Bar Issue
+
+Issue Id
+: bar
+
+Epic Link
+: PROJECT-123
+```
+
+When importing the tasks, map Issue Id to `Issue Id`, and map Blocks to `Link
+"Blocks"`. In this instance, the second task "bar" will be blocked by the first
+task "foo." The "Issue Id" field does _not_ get used directly as the issue's
+key; that gets assigned sequentially based on the project name and the highest
+issue number for that project. Multiple values can be assigned for a single
+link type.
+
+Note that Epic Link and (for subtasks) Parent Id should work similarly, both for
+new and old tasks.
+
+For more information on linking issues, see [this][atlassian-links].
+
+[atlassian-links]: https://confluence.atlassian.com/jirakb/import-issue-links-from-a-csv-file-in-jira-server-740262715.html (Import issue links from a CSV File in Jira server)
